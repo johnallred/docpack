@@ -1,0 +1,12 @@
+extends: existence
+message: "'%s' hedges. Say the thing or cut the sentence."
+level: warning
+ignorecase: true
+tokens:
+  - simply
+  - just
+  - obviously
+  - of course
+  - easy
+  - easily
+  - clearly

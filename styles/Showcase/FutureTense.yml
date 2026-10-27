@@ -1,0 +1,7 @@
+extends: existence
+message: "Prefer present tense to '%s' in reference and how-to content."
+level: suggestion
+ignorecase: true
+tokens:
+  - 'will be able to'
+  - 'is going to'

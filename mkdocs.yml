@@ -1,0 +1,67 @@
+site_name: docpack
+site_description: Turn a documentation tree into retrieval-ready, agent-readable artifacts.
+site_url: https://example.github.io/docpack/
+repo_url: https://github.com/example/docpack
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: teal
+      toggle: {icon: material/weather-night, name: Dark mode}
+    - scheme: slate
+      primary: teal
+      toggle: {icon: material/weather-sunny, name: Light mode}
+
+# Per-page SEO and GEO, driven by the content model rather than hand-written
+# into each page. See hooks/seo.py.
+hooks:
+  - hooks/seo.py
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_signature_annotations: true
+            separate_signature: true
+            merge_init_into_class: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc: {permalink: true}
+  - pymdownx.highlight: {anchor_linenums: true}
+  - pymdownx.superfences
+  - pymdownx.details
+
+# Diataxis drives the navigation, not just the folder names.
+nav:
+  - Home: index.md
+  - Tutorials:
+      - Package your first tree: tutorials/getting-started.md
+  - How-to guides:
+      - Pack a tree for retrieval: how-to/pack-for-rag.md
+      - Add a page to the corpus: how-to/add-a-page.md
+      - Wire up documentation CI: how-to/wire-up-ci.md
+  - Reference:
+      - Python API: reference/api.md
+      - Command line: reference/cli.md
+  - Explanation:
+      - The content model: explanation/content-model.md
+      - Why heading-aware chunking: explanation/why-heading-aware-chunking.md
+      - AI-readiness patterns: explanation/ai-readiness.md
+      - Evaluating retrieval: explanation/evaluating-retrieval.md
+      - How this repository is built: explanation/how-this-repo-works.md

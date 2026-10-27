@@ -1,0 +1,21 @@
+# Sentence case for headings, except numbered steps, which read better as
+# "Step 1: Install docpack" than "Step 1: install docpack".
+extends: capitalization
+message: "Headings use sentence case: '%s'."
+level: warning
+scope: heading
+match: $sentence
+exceptions:
+  - Diátaxis
+  - Python
+  - JSONL
+  - API
+  - CI
+  - CLI
+  - MCP
+  - RAG
+  - AI
+  - docpack
+  - Markdown
+  - YAML
+  - Vale

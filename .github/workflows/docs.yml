@@ -1,0 +1,159 @@
+name: docs
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  # Fast checks that gate every pull request. Each catches a different class
+  # of documentation rot and each fails independently, so a broken link does
+  # not hide a broken code sample.
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev,docs]"
+
+      - name: Content model
+        run: docpack docs --check
+
+      - name: Links
+        run: python scripts/check_links.py docs/ --check-anchors
+
+      - name: Unit tests and doctests
+        run: python -m pytest -q
+
+      - name: Code samples in the docs
+        run: python -m pytest tests/test_doc_samples.py -q
+
+      # Correctness checks above prove the docs are not broken. This one asks
+      # whether they answer anything. The floor is a regression gate, not a
+      # target; the real scores live in docs/explanation/evaluating-retrieval.md.
+      - name: Retrieval quality
+        run: docpack eval evals/golden.yaml --docs docs --fail-under 0.70
+
+      # The generator and the validator are separate modules with separate
+      # notions of a valid page. If they drift, the project tells contributors
+      # to run a command whose output CI then rejects.
+      - name: Generated pages pass validation
+        run: |
+          set -e
+          TREE="$(mktemp -d)"
+          for type in tutorial how-to reference explanation; do
+            docpack new "$type" --docs "$TREE" \
+              --title "Generated $type page" \
+              --summary "A generated $type page."
+          done
+          docpack "$TREE" --check
+          docpack "$TREE" --out "$TREE/dist" >/dev/null
+          echo "generated tree validates and packs"
+
+      # Terminology errors block the build. Style warnings are advisory,
+      # because a build that fails on a hedge word teaches people to skip CI.
+      - name: Prose
+        uses: errata-ai/vale-action@reviewdog
+        with:
+          files: docs
+          fail_on_error: true
+          filter_mode: nofilter
+          vale_flags: "--minAlertLevel=error"
+
+      - name: Site builds with no warnings
+        run: mkdocs build --strict
+
+      # The unit tests prove the SEO hook works; this proves it is wired in.
+      # Without it, an unregistered hook passes CI while every page silently
+      # serves the site-wide description.
+      - name: Per-page SEO is actually rendered
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys
+
+          pages = [p for p in pathlib.Path("site").rglob("index.html")]
+          descriptions = {}
+          for page in pages:
+              html = page.read_text(encoding="utf-8")
+              match = re.search(r'<meta name="description" content="([^"]*)"', html)
+              if match:
+                  descriptions[page.as_posix()] = match.group(1)
+
+          if len(set(descriptions.values())) < 2:
+              sys.exit(
+                  "FAIL: every page shares one meta description. "
+                  "The SEO hook is not registered in mkdocs.yml."
+              )
+
+          missing = [p for p in pages if "application/ld+json" not in p.read_text(encoding="utf-8")]
+          # The 404 page has no front matter, so it is exempt.
+          missing = [p.as_posix() for p in missing if p.name != "404.html"]
+          if missing:
+              sys.exit(f"FAIL: no structured data on: {missing}")
+
+          print(f"ok: {len(set(descriptions.values()))} distinct descriptions across {len(pages)} pages")
+          PY
+
+  # The slow check, kept separate so it does not gate fast feedback.
+  # Starts from an empty environment and follows the tutorial literally.
+  coldstart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Cold-start the quickstart
+        run: bash scripts/coldstart.sh
+
+  # Regenerate the retrieval artifacts and publish them alongside the site, so
+  # llms.txt can never drift from the corpus it describes.
+  publish:
+    needs: [quality, coldstart]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[docs]"
+
+      - name: Build site
+        run: mkdocs build --strict
+
+      - name: Generate AI-readable artifacts
+        run: |
+          docpack docs --out site \
+            --site-name "docpack" \
+            --site-url "${{ steps.pages.outputs.base_url || 'https://example.github.io/docpack' }}" \
+            --tagline "Turn a documentation tree into retrieval-ready, agent-readable artifacts."
+
+      # Serve the Markdown sources next to the rendered HTML so the links in
+      # llms.txt resolve to clean Markdown rather than to a rendered page.
+      - name: Publish Markdown sources
+        run: cp -r docs site/docs
+
+      - uses: actions/configure-pages@v5
+        id: pages
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4
+        id: deployment

@@ -1,0 +1,176 @@
+# Golden set: questions a reader would actually ask, and the page that should
+# answer each one.
+#
+# Rules for adding a case, which exist because an eval set rots faster than the
+# docs it measures:
+#
+#   1. Write the question the way a reader would type it, not the way the page
+#      is worded. A case that quotes the page's own headings measures nothing
+#      except that string matching works.
+#   2. `expect_diataxis` is the type the question's *phrasing* calls for, which
+#      is not always the type of `expect_source`. A mismatch between the two is
+#      a finding about the corpus, not a mistake in the case.
+#   3. `must_contain` holds the terms an answer has to cite to be grounded.
+#      Keep them short and literal. This is a cheap proxy for answer accuracy,
+#      not a substitute for reading the output.
+#   4. `why` says what the case is probing. Without it, nobody can tell a
+#      deliberately hard case from a stale one.
+#
+# Run with:  docpack eval evals/golden.yaml --docs docs -v
+
+# ----------------------------------------------------------------- the basics
+# Questions with one obvious home. If these regress, something is badly wrong.
+
+- id: install
+  question: how do I install docpack
+  expect_source: tutorials/getting-started.md
+  expect_diataxis: tutorial
+  must_contain: ["pip install"]
+  why: The first question anyone asks. Competes with every page that mentions installing.
+
+- id: exit-codes
+  question: what exit codes does the command return
+  expect_source: reference/cli.md
+  expect_diataxis: reference
+  must_contain: ["exit"]
+  why: Pure lookup. Reference should win outright.
+
+- id: cli-flags
+  question: what flags can I pass to control the output directory
+  expect_source: reference/cli.md
+  expect_diataxis: reference
+  must_contain: ["--out"]
+  why: Checks that the flag itself is retrievable, not just the page about flags.
+
+- id: pack-for-vector-store
+  question: how do I generate JSONL records for a vector store
+  expect_source: how-to/pack-for-rag.md
+  expect_diataxis: how-to
+  must_contain: ["jsonl"]
+  why: The central task of the tool.
+
+- id: add-page
+  question: how do I add a new documentation page
+  expect_source: how-to/add-a-page.md
+  expect_diataxis: how-to
+  must_contain: ["front matter"]
+  why: Contributor onboarding. Competes with the content-model explanation page.
+
+- id: ci-setup
+  question: how do I run these checks on every pull request
+  expect_source: how-to/wire-up-ci.md
+  expect_diataxis: how-to
+  why: Operator task. Phrased without the words "CI" or "workflow" on purpose.
+
+# ------------------------------------------------------- reasoning, not recipe
+# "Why" questions. These should route to explanation, and the interesting
+# failure mode is a how-to page winning because it shares the vocabulary.
+
+- id: why-not-fixed-size
+  question: why not just split documents every thousand characters
+  expect_source: explanation/why-heading-aware-chunking.md
+  expect_diataxis: explanation
+  must_contain: ["window"]
+  why: The repo's central technical argument, asked in the reader's words.
+
+- id: why-closed-vocab
+  question: why cant I just use free-form tags instead of a fixed list
+  expect_source: explanation/content-model.md
+  expect_diataxis: explanation
+  must_contain: ["vocabular"]
+  why: Probes the content-model argument. "Tags" also appears in the how-to pages.
+
+- id: why-three-files
+  question: why are there three different output formats instead of one
+  expect_source: explanation/ai-readiness.md
+  expect_diataxis: explanation
+  must_contain: ["consumer"]
+  why: Tests whether the three-consumers argument is retrievable.
+
+- id: why-summary-required
+  question: why is the summary field mandatory on every page
+  expect_source: explanation/content-model.md
+  expect_diataxis: explanation
+  must_contain: ["summary"]
+  why: One field discussed on two pages. Checks the chunker picked the right section.
+
+- id: why-generated-reference
+  question: why is the API reference generated instead of written by hand
+  expect_source: explanation/how-this-repo-works.md
+  expect_diataxis: explanation
+  must_contain: ["drift"]
+  why: The staleness argument. Competes with the reference page itself.
+
+# --------------------------------------------------------------- hard on purpose
+# Cases that probe known weak points. Some of these are expected to miss, and a
+# miss here is a finding to act on rather than a bug to hide.
+
+- id: stable-ids
+  question: if I edit the intro does every chunk id change
+  expect_source: how-to/pack-for-rag.md
+  expect_diataxis: how-to
+  must_contain: ["stable"]
+  why: >
+    Asked as a worry, not a topic. Shares almost no vocabulary with the page,
+    which is the realistic case a lexical retriever handles worst.
+
+- id: fence-bug
+  question: a comment inside a bash block is being treated as a heading
+  expect_source: explanation/why-heading-aware-chunking.md
+  expect_diataxis: explanation
+  must_contain: ["fence"]
+  why: >
+    A bug report phrased as a symptom. Tests whether the page that documents
+    the bug is reachable from the symptom rather than from the cause.
+
+- id: filter-before-rank
+  question: can I restrict search to only how-to guides
+  expect_source: how-to/pack-for-rag.md
+  expect_diataxis: how-to
+  must_contain: ["filter"]
+  why: The metadata-filtering argument, asked as a capability question.
+
+- id: stale-pages
+  question: how do I find pages that nobody has reviewed in a year
+  expect_source: explanation/content-model.md
+  expect_diataxis: explanation
+  why: >
+    Deliberate type mismatch. A reader wants a how-to and the corpus only has
+    an explanation, so a miss here is a gap in the docs, not in the retriever.
+
+- id: coldstart
+  question: how do I test that the quickstart actually works from scratch
+  expect_source: how-to/wire-up-ci.md
+  expect_diataxis: how-to
+  must_contain: ["cold"]
+  why: Discussed on three pages. Tests whether the actionable one wins.
+
+- id: llms-txt-what
+  question: what is llms.txt and who proposed it
+  expect_source: explanation/ai-readiness.md
+  expect_diataxis: explanation
+  must_contain: ["llms.txt"]
+  why: Factual question inside an explanation page. Tests heading-level targeting.
+
+- id: executable-samples
+  question: are the code examples in the docs actually run anywhere
+  expect_source: explanation/how-this-repo-works.md
+  expect_diataxis: explanation
+  must_contain: ["execut"]
+  why: Asked as skepticism. Competes with the how-to page that tells you how.
+
+- id: chunk-size
+  question: how do I make the chunks smaller
+  expect_source: how-to/pack-for-rag.md
+  expect_diataxis: how-to
+  must_contain: ["size"]
+  why: Short query, few terms, so BM25 has little to work with.
+
+- id: prose-linting
+  question: how do I stop people writing hedge words
+  expect_source: how-to/add-a-page.md
+  expect_diataxis: how-to
+  must_contain: ["vale"]
+  why: >
+    The reader knows the symptom and not the tool name. Tests whether Vale is
+    reachable without naming it.

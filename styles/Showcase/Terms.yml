@@ -1,0 +1,9 @@
+extends: substitution
+message: "Use '%s' rather than '%s'."
+level: error
+ignorecase: false
+swap:
+  'Diataxis': 'Diátaxis'
+  'front-matter': 'front matter'
+  'Github': 'GitHub'
+  'Javascript': 'JavaScript'
