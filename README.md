@@ -33,11 +33,13 @@ review comments.
 ## Quick start
 
 ```bash
-pip install -e ".[dev,docs]"
+python3 -m pip install -e ".[dev,docs]"
 
 docpack docs --check                      # validate the content model
-python -m pytest -q                       # unit tests, doctests, doc samples
-python scripts/check_links.py docs/ --check-anchors
+python3 -m pytest -q                       # unit tests, doctests, doc samples
+python3 scripts/check_links.py docs/ --check-anchors
+#install macports (https://guide.macports.org/)
+#sudo port install vale
 vale docs/                                # prose (install separately: https://vale.sh)
 mkdocs build --strict                     # the site, warnings are errors
 docpack eval evals/golden.yaml            # does the corpus answer questions
@@ -45,7 +47,7 @@ bash scripts/coldstart.sh                 # the tutorial, from an empty environm
 
 docpack new how-to --title "Rotate the key"   # a page that already conforms
 docpack docs --out dist                   # chunks.jsonl, llms.txt, llms-full.txt
-python mcp_server/server.py --docs docs   # serve the docs to an agent
+python3 mcp_server/server.py --docs docs   # serve the docs to an agent
 ```
 
 ## The ideas worth arguing about
