@@ -1,7 +1,7 @@
 site_name: docpack
 site_description: Turn a documentation tree into retrieval-ready, agent-readable artifacts.
-site_url: https://example.github.io/docpack/
-repo_url: https://github.com/example/docpack
+site_url: https://johnallred.github.io/docpack/
+repo_url: https://github.com/johnallred/docpack
 edit_uri: edit/main/docs/
 
 theme:

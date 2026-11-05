@@ -80,6 +80,9 @@ or a non-date `updated` value, and it warns on pages not reviewed in a year.
 
 ## Check your prose and links
 
+Vale enforces the prose rules, so hedge words and banned terminology fail here
+rather than in review:
+
 ```bash
 vale docs/
 python scripts/check_links.py docs/

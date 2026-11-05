@@ -83,11 +83,11 @@ Twenty cases, top-3, measured against the twelve pages in this repository:
 
 | Metric | Score |
 |---|---|
-| hit@1 | 60% |
+| hit@1 | 65% |
 | hit@3 | 95% |
-| MRR | 0.750 |
-| routing accuracy | 70% |
-| grounded@1 | 75% |
+| MRR | 0.775 |
+| routing accuracy | 75% |
+| grounded@1 | 90% |
 
 These are not good numbers and they are not meant to look like good numbers.
 Six of the twenty cases are marked hard on purpose, and the set is deliberately
@@ -113,11 +113,11 @@ Diátaxis type to search.
 
 ```
   hit@1                     65.0%
-  hit@1 with type filter    80.0%
-  routing headroom         +15.0%
+  hit@1 with type filter    75.0%
+  routing headroom         +10.0%
 ```
 
-That 80% is **not** an achievable score. At query time nobody knows what type a
+That 75% is **not** an achievable score. At query time nobody knows what type a
 question wants; the harness knows only because the golden set declares it.
 
 It measures something more useful than a score. The gap is how much accuracy is
@@ -130,6 +130,79 @@ not worth building, and the problem is ranking.
 This is the kind of question an evaluation harness exists to answer. Without
 one, the choice between "add a reranker" and "add a router" is settled by
 whoever argues hardest.
+
+## Do not quote a golden question in the docs
+
+The corpus and the test set live in the same repository, which creates a
+contamination route with no equivalent in ordinary machine learning: a
+documentation page that quotes one of the twenty questions becomes the
+strongest lexical match for its own test case, and the evaluation starts
+scoring the example rather than the answer.
+
+Adding a `search` section to the [CLI reference](../reference/cli.md) cost five
+points of `hit@1`, because its example used the `chunk-size` question verbatim
+and `reference/cli.md` displaced the page that answers it. The second draft
+replaced the example and quoted the question again inside a note explaining the
+mistake, and cost exactly the same five points. The third draft names the case
+and not its wording, and the score returned to 60%.
+
+Two things follow. A documentation example must be phrased differently from
+every golden question, which is a constraint on the docs that the evaluation
+imposes and nothing enforces. And a five-point move is one case out of twenty,
+so it was legible only because the recorded scores on this page are specific
+enough to diff; a vaguer claim would have absorbed it silently.
+
+## The cheapest fix is vocabulary, not ranking
+
+Grounding measured across the whole retrieved window, rather than the top chunk
+alone, says how much a wider context buys:
+
+```
+  grounded@1    16/20  (80%)
+  grounded@3    18/20  (90%)
+  grounded@5    18/20  (90%)
+  grounded@10   18/20  (90%)
+```
+
+Ten points between one chunk and three, and then nothing at all out to ten.
+That plateau is diagnostic: once widening the window stops helping, the
+remaining failures are not ranking failures, and no reranker or embedding model
+will touch them.
+
+Both residual cases were vocabulary gaps, and the golden set had said so in its
+own `why` field: in each, the reader's everyday word for the thing was absent
+from the page that documents it, while the corpus used a precise term the
+reader had no reason to know.
+
+The fix was one sentence per page, each placing the reader's word beside the
+corpus's. Following the rule above, the words are not reproduced here; the
+cases are `chunk-size` and `prose-linting`, and the edits are in
+[`how-to/pack-for-rag.md`](../how-to/pack-for-rag.md) and
+[`how-to/add-a-page.md`](../how-to/add-a-page.md).
+
+That rule is easy to break, and this section broke it. The first draft of this
+paragraph set out both pairs of words in a table, which made this explanation
+page compete with the two how-to pages for their own queries and gave back five
+points of `hit@1`. Even a page about contamination contaminates.
+
+```
+             before   after
+hit@1          60%     65%
+hit@3          95%     95%
+MRR          0.742   0.775
+routing        70%     75%
+grounded@1     80%     90%
+grounded@3     90%    100%
+headroom      +15%    +10%
+```
+
+Four of five scores moved, and the headroom narrowed, from two sentences. The
+narrowing is the subtle part: routing headroom measures accuracy sitting behind
+a query router, and some of that gap was never a routing problem at all. It was
+a word the corpus did not use.
+
+This is the argument for measuring before building. A ten-point `hit@1` gap
+looks like a case for a reranker, and five points of it were a synonym.
 
 ## Why the retriever is lexical
 

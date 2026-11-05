@@ -1,8 +1,9 @@
 """Command line interface for docpack.
 
-Three commands:
+Four commands:
 
 - `docpack <dir>`        pack a tree into retrieval artifacts
+- `docpack search`       ask the corpus a question and see what comes back
 - `docpack new`          generate a page that conforms to the content model
 - `docpack eval`         score the corpus against a golden set of questions
 
@@ -33,7 +34,7 @@ from .scaffold import ScaffoldError, new_page, write_page
 
 #: Subcommand names. A first argument matching one of these is dispatched to
 #: that subcommand; anything else is treated as a path to pack.
-SUBCOMMANDS = ("new", "eval")
+SUBCOMMANDS = ("new", "eval", "search")
 
 
 # --------------------------------------------------------------------- parsers
@@ -151,6 +152,57 @@ def cmd_new(argv: list[str]) -> int:
     return 0
 
 
+def build_search_parser() -> argparse.ArgumentParser:
+    """Construct the parser for the search command."""
+    p = argparse.ArgumentParser(
+        prog="docpack search",
+        description="Ask the corpus a question and see which chunks come back.",
+    )
+    p.add_argument("question", help="The question, in a reader's own words")
+    p.add_argument("--docs", type=Path, default=Path("docs"), help="Documentation tree")
+    p.add_argument("-n", "--limit", type=int, default=3, help="Results to show")
+    p.add_argument(
+        "--type",
+        dest="diataxis",
+        choices=sorted(DIATAXIS_TYPES),
+        help="Restrict to one Diataxis type: the filter `eval` measures headroom for",
+    )
+    return p
+
+
+def cmd_search(argv: list[str]) -> int:
+    """Answer one question from the corpus, for a human.
+
+    This command exists because of a cold-start failure, reported by the only
+    reader who had run the quick start. Every other command validates something
+    and prints "ok", so a reader could run all nine, watch them pass, and still
+    not know what the library is for. `eval` scores a fixed golden set, which
+    answers "is retrieval working" rather than "what does this do". Retrieval
+    is the entire point of the package and there had been no way to try it by
+    hand.
+    """
+    args = build_search_parser().parse_args(argv)
+
+    try:
+        index = Index.from_tree(args.docs)
+    except ContentModelError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    hits = index.search(args.question, diataxis=args.diataxis, limit=args.limit)
+    if not hits:
+        print(f'nothing in {len(index)} chunks matched "{args.question}"')
+        return 1
+
+    print(f'\n  "{args.question}"   ({len(index)} chunks indexed)\n')
+    for position, hit in enumerate(hits, 1):
+        snippet = " ".join(hit.text.split())[:150]
+        print(f"  {position}. {hit.breadcrumb}")
+        print(f"     {hit.source}  [{hit.diataxis}]")
+        print(f"     {snippet}...\n")
+    return 0
+
+
 def cmd_eval(argv: list[str]) -> int:
     """Score retrieval against a golden set."""
     args = build_eval_parser().parse_args(argv)
@@ -181,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
 
     if argv and argv[0] in SUBCOMMANDS:
-        return {"new": cmd_new, "eval": cmd_eval}[argv[0]](argv[1:])
+        return {"new": cmd_new, "eval": cmd_eval, "search": cmd_search}[argv[0]](argv[1:])
     return cmd_pack(argv)
 
 

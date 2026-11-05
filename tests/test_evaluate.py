@@ -289,3 +289,53 @@ def test_the_report_names_the_cases_that_missed():
 def test_verbose_reports_every_case():
     report = Report((make_result("good", 1), make_result("bad", None)))
     assert "good" in format_report(report, verbose=True)
+
+
+# --------------------------------------------------------------- search command
+
+
+def test_search_prints_the_section_not_just_the_page(capsys):
+    """The command exists so a reader can see what the library is for.
+
+    Printing the page alone would repeat the mistake the grounding report made:
+    "the right page" hides "the wrong section", and the breadcrumb is the only
+    thing that distinguishes them.
+    """
+    from docpack.cli import main
+
+    assert main(["search", "how do I make the chunks smaller", "--docs", "docs"]) == 0
+    out = capsys.readouterr().out
+    assert "chunks indexed" in out
+    assert " > " in out, "every result should name its section, not only its page"
+    assert ".md" in out
+
+
+def test_search_respects_the_type_filter(capsys):
+    from docpack.cli import main
+
+    assert (
+        main(
+            [
+                "search",
+                "why not split every thousand characters",
+                "--docs",
+                "docs",
+                "--type",
+                "explanation",
+                "-n",
+                "3",
+            ]
+        )
+        == 0
+    )
+    out = capsys.readouterr().out
+    assert "[explanation]" in out
+    for other in ("[tutorial]", "[how-to]", "[reference]"):
+        assert other not in out
+
+
+def test_search_exits_nonzero_when_nothing_matches(capsys):
+    from docpack.cli import main
+
+    assert main(["search", "zzzz nonexistent gibberish", "--docs", "docs"]) == 1
+    assert "nothing in" in capsys.readouterr().out

@@ -8,6 +8,66 @@ it is also the subject: this repository exists to show what a documentation
 platform looks like when the standards are enforced by machinery rather than by
 review comments.
 
+## What it makes
+
+One command, and three files:
+
+```bash
+docpack docs --out dist
+```
+
+```
+packed 12 pages into 85 chunks -> dist
+
+dist/chunks.jsonl    74K   85 records, one per section, for a vector store
+dist/llms.txt       2.2K   a map of the corpus, grouped by Diátaxis type
+dist/llms-full.txt   45K   every page as one file, for a long context window
+```
+
+`chunks.jsonl` is the real output. One record per heading-bounded section,
+carrying the metadata a retriever filters on:
+
+```json
+{
+  "id": "954d9bb259ea2405",
+  "source": "explanation/evaluating-retrieval.md",
+  "breadcrumb": "Evaluating retrieval > The golden set",
+  "diataxis": "explanation",
+  "audience": "developer",
+  "tags": ["rag", "retrieval", "evaluation"],
+  "summary": "Why a golden set of questions is the only check that measures whether the docs answer anything.",
+  "text": "`evals/golden.yaml` holds twenty cases. Each one pairs a question with ..."
+}
+```
+
+## What it is for
+
+Ask the corpus a question the way a reader would phrase it:
+
+```bash
+docpack search "how do I make the chunks smaller"
+```
+
+```
+  "how do I make the chunks smaller"   (85 chunks indexed)
+
+  1. Pack a tree for retrieval > Control chunk size
+     how-to/pack-for-rag.md  [how-to]
+     To make chunks smaller or larger, change the token ceiling. The default ...
+```
+
+That is the whole proposition, and that result used to be wrong. It returned
+the right page and the wrong section, because the page said "token ceiling" and
+never said "smaller", so the reader's word was absent from a corpus of 1,159
+terms. `docpack eval` is the same question asked twenty times with the answers
+written down, which is how a missing synonym shows up as a number instead of a
+hunch: adding that one word and one other moved four of five retrieval scores.
+See [Evaluating retrieval](docs/explanation/evaluating-retrieval.md).
+
+Which is the point of the repository. The artifacts are checkable, so the gap
+between "the docs are correct" and "the docs answer questions" is a figure you
+can argue about.
+
 ---
 
 ## What this repository demonstrates
@@ -18,7 +78,8 @@ review comments.
 | **Standards encoded in a generator, not just a validator** | [`src/docpack/scaffold.py`](src/docpack/scaffold.py) | `docpack new` output is validated by CI, so it cannot drift from the content model |
 | **Golden path, clean environment to working result** | [`docs/tutorials/getting-started.md`](docs/tutorials/getting-started.md) | `scripts/coldstart.sh` |
 | **Cold-start testing of the quickstart** | [`scripts/coldstart.sh`](scripts/coldstart.sh) | Runs the tutorial's commands in a fresh venv and asserts its promised output |
-| **Docs-as-code pipeline** | [`.github/workflows/docs.yml`](.github/workflows/docs.yml) | Six gates on every pull request |
+| **Docs-as-code pipeline** | [`.github/workflows/docs.yml`](.github/workflows/docs.yml) | Ten gates on every pull request: nine checks plus the cold start |
+| **Published figures checked against live runs** | [`tests/test_published_figures.py`](tests/test_published_figures.py) | Every number this README and the retrieval page quote is re-derived from the tools, not duplicated as a constant |
 | **Content model and information architecture** | [`src/docpack/frontmatter.py`](src/docpack/frontmatter.py) | `docpack docs --check` |
 | **Diátaxis structure** | [`docs/`](docs/) | Four directories, one type per page, enforced |
 | **Reference generated from source** | [`docs/reference/api.md`](docs/reference/api.md) | `mkdocstrings`, cannot drift from the code |
@@ -26,6 +87,7 @@ review comments.
 | **Link validation** | [`scripts/check_links.py`](scripts/check_links.py) | Internal links and heading anchors |
 | **Code-sample validation** | [`tests/test_doc_samples.py`](tests/test_doc_samples.py) | Every Python block in the docs is executed |
 | **RAG packaging** | [`src/docpack/pack.py`](src/docpack/pack.py) | Chunks with stable IDs and filterable metadata |
+| **Retrieval you can try by hand** | [`src/docpack/cli.py`](src/docpack/cli.py) | `docpack search`, added after a reader ran the quick start and could not tell what the library did |
 | **llms.txt and llms-full.txt** | `docpack docs --out dist` | Generated from front matter, so it cannot go stale |
 | **Agent access over MCP** | [`mcp_server/server.py`](mcp_server/server.py) | JSON-RPC over stdio, three tools |
 | **SEO and GEO from the content model** | [`hooks/seo.py`](hooks/seo.py) | `tests/test_seo_hook.py`; one `summary` feeds the meta description, Open Graph, JSON-LD, `llms.txt`, and the retrieval snippet |
@@ -33,22 +95,38 @@ review comments.
 ## Quick start
 
 ```bash
-python3 -m pip install -e ".[dev,docs]"
+pip install -e ".[dev,docs]"
+```
 
+**Commands that make or do something.** Start here. Each one leaves you with an
+artifact or an answer.
+
+```bash
+docpack docs --out dist                   # the three files above
+docpack search "how do I make the chunks smaller"   # ask the corpus
+docpack new how-to --title "Rotate the key"         # a page that already conforms
+python mcp_server/server.py --docs docs   # serve the docs to an agent
+```
+
+**Commands that check something.** Each one prints a report and exits zero when
+the corpus is sound. They are the reason the artifacts above can be trusted, and
+running them tells you nothing about what the library does, so do not start
+with them.
+
+```bash
 docpack docs --check                      # validate the content model
-python3 -m pytest -q                       # unit tests, doctests, doc samples
-python3 scripts/check_links.py docs/ --check-anchors
-#install macports (https://guide.macports.org/)
-#sudo port install vale
+python -m pytest -q                       # 142 tests: units, doctests, doc samples
+python scripts/check_links.py docs/ --check-anchors
 vale docs/                                # prose (install separately: https://vale.sh)
 mkdocs build --strict                     # the site, warnings are errors
 docpack eval evals/golden.yaml            # does the corpus answer questions
 bash scripts/coldstart.sh                 # the tutorial, from an empty environment
-
-docpack new how-to --title "Rotate the key"   # a page that already conforms
-docpack docs --out dist                   # chunks.jsonl, llms.txt, llms-full.txt
-python3 mcp_server/server.py --docs docs   # serve the docs to an agent
 ```
+
+That split is here because the first reader to run this quick start ran all
+nine checkers, watched them pass, and could not tell what the library was for.
+Eight of the nine print "ok" and produce nothing. `docpack search` did not exist
+until that happened, and the ordering above is the fix.
 
 ## The ideas worth arguing about
 
@@ -138,7 +216,7 @@ mcp_server/          MCP server exposing the docs to agents
 
 ## Status
 
-Every command in this README has been run. 116 tests cover the library, its
+Every command in this README has been run. 142 tests cover the library, its
 docstrings, every executable sample in the documentation, and the SEO hook.
 Retrieval scores are published in
 [Evaluating retrieval](docs/explanation/evaluating-retrieval.md) and gated in

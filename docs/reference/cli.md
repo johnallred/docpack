@@ -19,11 +19,13 @@ docpack new TYPE --title TITLE [--docs DIR] [--audience AUDIENCE]
                  [--summary TEXT] [--tags LIST] [--dry-run]
 
 docpack eval GOLDEN [--docs DIR] [-v] [--fail-under MRR]
+
+docpack search QUESTION [--docs DIR] [-n LIMIT] [--type TYPE]
 ```
 
 Packing is the default command and takes the documentation directory as its
-first argument, so it needs no subcommand name. A first argument of `new` or
-`eval` selects those commands instead.
+first argument, so it needs no subcommand name. A first argument of `new`,
+`eval` or `search` selects those commands instead.
 
 ## Pack
 
@@ -89,17 +91,53 @@ docpack eval GOLDEN [--fail-under MRR]
 | `-v`, `--verbose` | no | off | Show every case, not just the misses |
 | `--fail-under` | no | none | Exit `1` if MRR falls below this value |
 
+## Search
+
+Asks the corpus one question and prints the chunks that come back, with the
+section each one belongs to. Unlike [`eval`](#eval), which scores a fixed
+golden set, this takes an arbitrary question, so it is the command to reach for
+when the question is "what does this corpus actually answer".
+
+```
+docpack search QUESTION [-n LIMIT] [--type TYPE]
+```
+
+| Argument | Required | Default | Description |
+|---|---|---|---|
+| `QUESTION` | yes | | The question, phrased as a reader would |
+| `--docs` | no | `docs` | Root of the documentation tree |
+| `-n`, `--limit` | no | `3` | Results to print |
+| `--type` | no | none | Restrict to one Diataxis type |
+
+Results print the breadcrumb rather than only the file, because the failure
+worth seeing is the right page and the wrong section. `--type` applies the
+pre-filter whose unclaimed accuracy `eval` reports as routing headroom.
+
 ## Exit codes
 
 | Code | Meaning |
 |---|---|
 | `0` | Success. In `--check` mode, all pages conform |
-| `1` | A page violated the content model, or `eval` fell below `--fail-under` |
+| `1` | A page violated the content model, `eval` fell below `--fail-under`, or `search` matched nothing |
 | `2` | Argument parsing failed, or a malformed golden set, or a target file exists |
 
 Staleness produces a warning on stdout and does not affect the exit code.
 
 ## Examples
+
+Ask the corpus a question:
+
+```bash
+docpack search "what belongs in the tags field"
+```
+
+The example deliberately is not one of the twenty questions in
+`evals/golden.yaml`. A golden-set question quoted in a documentation page makes
+that page the strongest lexical match for its own test case, so the evaluation
+scores the example instead of the answer. The first draft of this section
+quoted the `chunk-size` case verbatim and cost five points of `hit@1`; the
+second draft quoted it again while explaining the mistake, and cost the same
+five points. Name the case, never its wording.
 
 Validate without writing:
 

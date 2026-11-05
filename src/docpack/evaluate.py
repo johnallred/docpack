@@ -297,10 +297,15 @@ def format_report(report: Report, *, verbose: bool = False) -> str:
     ungrounded = [r for r in report.results if not r.grounded]
     if ungrounded:
         out.append("")
-        out.append("  top result missing required terms:")
+        out.append("  top chunk missing required terms:")
         for r in ungrounded:
-            out.append(
-                f"    {r.case.id}: {list(r.missing_terms)} not in {r.top_source}"
-            )
+            # The term check reads the chunk, so the message has to name the
+            # chunk. Naming the page instead reads as "this page never mentions
+            # size", which sends a reader to grep pack-for-rag.md, find
+            # "## Control chunk size", and conclude the metric is broken. The
+            # failure grounded@1 exists to catch is the right page and the
+            # wrong section, and only the breadcrumb says which section.
+            where = r.top_breadcrumb or r.top_source or "(nothing retrieved)"
+            out.append(f"    {r.case.id}: {list(r.missing_terms)} not in {where}")
 
     return "\n".join(out)

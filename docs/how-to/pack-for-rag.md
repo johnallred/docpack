@@ -19,9 +19,9 @@ docpack docs --out dist
 
 ## Control chunk size
 
-The default soft ceiling is 400 estimated tokens. Sections under that become a
-single chunk; longer ones split on paragraph boundaries and keep the same
-heading trail.
+To make chunks smaller or larger, change the token ceiling. The default soft
+ceiling is 400 estimated tokens. Sections under that become a single chunk;
+longer ones split on paragraph boundaries and keep the same heading trail.
 
 To change it, call the library directly:
 

@@ -31,10 +31,23 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
+from docpack.frontmatter import DIATAXIS_TYPES  # noqa: E402
 from docpack.pack import Page, load_tree  # noqa: E402
 from docpack.retrieve import Index  # noqa: E402
 
 PROTOCOL_VERSION = "2024-11-05"
+
+
+class ToolError(Exception):
+    """A tool could not do what was asked.
+
+    Raised rather than returned. MCP reports a tool-level failure as a
+    successful JSON-RPC response carrying `isError: true`, which is the only
+    channel a client can check. Two of these cases used to return a string
+    beginning "Error:" with `isError` left false, so the text and the flag
+    disagreed and a client that checked the flag, which is the documented
+    thing to check, was told a rejected path lookup had succeeded.
+    """
 
 TOOLS: list[dict[str, Any]] = [
     {
@@ -106,6 +119,15 @@ class DocsServer:
 
     def search_docs(self, query: str, diataxis: str | None = None, limit: int = 5) -> str:
         """Rank chunks with the shared BM25 retriever."""
+        # An unknown filter value used to pass straight through to the index,
+        # match nothing, and come back as "No matches", which is
+        # indistinguishable from a question the corpus genuinely cannot answer.
+        # A typo in a filter and an empty result set are different answers.
+        if diataxis is not None and diataxis not in DIATAXIS_TYPES:
+            raise ToolError(
+                f"unknown diataxis type {diataxis!r}; "
+                f"expected one of {', '.join(sorted(DIATAXIS_TYPES))}"
+            )
         hits = self.index.search(query, diataxis=diataxis, limit=limit)
         if not hits:
             return f"No matches for {query!r}."
@@ -115,12 +137,12 @@ class DocsServer:
         """Return one page's full Markdown."""
         target = (self.docs_dir / path).resolve()
         if not target.is_relative_to(self.docs_dir.resolve()):
-            return "Error: path escapes the documentation tree."
+            raise ToolError("path escapes the documentation tree")
         if not target.exists():
             available = ", ".join(
                 p.path.relative_to(self.docs_dir).as_posix() for p in self.pages
             )
-            return f"Error: no page at {path!r}. Available: {available}"
+            raise ToolError(f"no page at {path!r}. Available: {available}")
         return target.read_text(encoding="utf-8")
 
     def list_pages(self, diataxis: str | None = None, audience: str | None = None) -> str:
@@ -142,16 +164,25 @@ class DocsServer:
 
     def call_tool(self, name: str, arguments: dict[str, Any]) -> str:
         if name == "search_docs":
+            if "query" not in arguments:
+                raise ToolError("search_docs requires a 'query' argument")
             return self.search_docs(
                 arguments["query"],
                 arguments.get("diataxis"),
                 int(arguments.get("limit", 5)),
             )
         if name == "get_page":
+            # A bare KeyError stringifies to just the key name, so the client
+            # saw `Error: 'path'`, which names the problem without stating it.
+            if "path" not in arguments:
+                raise ToolError("get_page requires a 'path' argument")
             return self.get_page(arguments["path"])
         if name == "list_pages":
             return self.list_pages(arguments.get("diataxis"), arguments.get("audience"))
-        raise KeyError(f"unknown tool: {name}")
+        raise ToolError(
+            f"unknown tool: {name}; expected one of "
+            f"{', '.join(tool['name'] for tool in TOOLS)}"
+        )
 
     def handle(self, request: dict[str, Any]) -> dict[str, Any] | None:
         """Handle one JSON-RPC request. Returns None for notifications."""

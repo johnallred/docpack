@@ -82,3 +82,51 @@ def test_sample_executes(sample: Sample, monkeypatch, capsys):
             f"--- stdout ---\n{captured.out}\n"
             f"--- code ---\n{sample.code}"
         )
+
+
+# ------------------------------------------- the README's own first impression
+
+
+def _readme_quick_start_commands() -> list[str]:
+    """Every shell command in the README's "Quick start" section, in order."""
+    text = (Path(__file__).resolve().parent.parent / "README.md").read_text("utf-8")
+    section = text.partition("## Quick start")[2].partition("\n## ")[0]
+    commands: list[str] = []
+    for block in re.findall(r"```bash\n(.*?)```", section, re.S):
+        for line in block.splitlines():
+            line = line.strip()
+            if line and not line.startswith("#"):
+                commands.append(line.split("#")[0].strip())
+    return commands
+
+
+#: Commands that leave the reader holding something: a file, an answer, a
+#: running process. Anything else prints a report and exits zero.
+PRODUCES_SOMETHING = ("docpack docs --out", "docpack search", "docpack new", "mcp_server/server.py")
+
+
+def test_the_quick_start_leads_with_a_command_that_produces_something():
+    """The metric this encodes is time-to-first-success, and it was once infinite.
+
+    `scripts/coldstart.sh` asserts that a reader reaches a working result in
+    about nine seconds. It passed throughout, while the first reader to follow
+    the README ran every command, watched them all exit zero, and could not
+    tell what the library did. The cold-start test measured the tutorial's
+    command sequence; the reader followed the README's, where the first four
+    commands were validators and the artifact command came ninth.
+
+    An entry point nobody instrumented is an entry point where the metric is
+    silently absent, so this test instruments the other door.
+    """
+    commands = _readme_quick_start_commands()
+    assert commands, "the README has no Quick start commands"
+
+    installs = [c for c in commands if c.startswith("pip install")]
+    rest = [c for c in commands if not c.startswith("pip install")]
+    assert installs, "the quick start should still say how to install"
+
+    first = rest[0]
+    assert any(first.startswith(p) or p in first for p in PRODUCES_SOMETHING), (
+        f"the first quick-start command after install is {first!r}, which only "
+        "reports. Lead with a command that leaves the reader holding something."
+    )
