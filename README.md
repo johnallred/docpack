@@ -105,7 +105,7 @@ artifact or an answer.
 docpack docs --out dist                   # the three files above
 docpack search "how do I make the chunks smaller"   # ask the corpus
 docpack new how-to --title "Rotate the key"         # a page that already conforms
-python mcp_server/server.py --docs docs   # serve the docs to an agent
+python3 mcp_server/server.py --docs docs   # serve the docs to an agent
 ```
 
 **Commands that check something.** Each one prints a report and exits zero when
@@ -115,8 +115,8 @@ with them.
 
 ```bash
 docpack docs --check                      # validate the content model
-python -m pytest -q                       # 142 tests: units, doctests, doc samples
-python scripts/check_links.py docs/ --check-anchors
+python3 -m pytest -q                       # 142 tests: units, doctests, doc samples
+python3 scripts/check_links.py docs/ --check-anchors
 vale docs/                                # prose (install separately: https://vale.sh)
 mkdocs build --strict                     # the site, warnings are errors
 docpack eval evals/golden.yaml            # does the corpus answer questions

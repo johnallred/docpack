@@ -100,15 +100,29 @@ assert {r['diataxis'] for r in rows}=={'explanation','how-to'}
 print('chunks.jsonl has the documented shape')
 "
 
+replace_diataxis() {
+  python3 - "$1" "$2" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path("mydocs/how-to/create-a-widget.md")
+old, new = f"diataxis: {sys.argv[1]}", f"diataxis: {sys.argv[2]}"
+text = path.read_text(encoding="utf-8")
+if text.count(old) != 1:
+    raise SystemExit(f"expected exactly one {old!r} in {path}")
+path.write_text(text.replace(old, new), encoding="utf-8")
+PY
+}
+
 say "Tutorial step 5: break it on purpose"
-sed -i 's/diataxis: how-to/diataxis: blog-post/' mydocs/how-to/create-a-widget.md
+replace_diataxis how-to blog-post
 if docpack mydocs --check > /dev/null 2>&1; then
   echo "FAIL: tutorial says an invalid diataxis fails validation, but it passed" >&2
   exit 1
 fi
 echo "invalid content model is rejected, as the tutorial promises"
 
-sed -i 's/diataxis: blog-post/diataxis: how-to/' mydocs/how-to/create-a-widget.md
+replace_diataxis blog-post how-to
 docpack mydocs --check > /dev/null
 echo "restored page passes again"
 
