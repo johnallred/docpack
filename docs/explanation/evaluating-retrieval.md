@@ -109,7 +109,7 @@ on this page, where changing them shows up in a diff and has to be explained.
 ## The headroom number, and why it is not a score
 
 The report ends with a second figure: hit@1 when the retriever is told which
-Diátaxis type to search.
+Diataxis type to search.
 
 ```
   hit@1                     65.0%

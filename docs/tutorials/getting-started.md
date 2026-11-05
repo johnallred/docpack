@@ -103,7 +103,7 @@ pages have two headings.
 cat dist/llms.txt
 ```
 
-The file groups your pages by their Diátaxis type, with the `summary` from the
+The file groups your pages by their Diataxis type, with the `summary` from the
 front matter as each link's annotation. That is why the content model requires
 a summary: it is not decoration, it is the text an assistant reads when
 deciding which page answers a question.

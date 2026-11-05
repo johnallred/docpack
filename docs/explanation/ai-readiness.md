@@ -43,7 +43,7 @@ sitemap already provides. The honest position is that it is cheap to generate,
 it demonstrably gets fetched, and the structural discipline it imposes is
 useful regardless of who reads the file.
 
-This project groups the index by Diátaxis type, which is a small addition to
+This project groups the index by Diataxis type, which is a small addition to
 the convention. Telling an assistant that a page is a how-to rather than an
 explanation helps it pick, in the same way it helps a human.
 

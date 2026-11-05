@@ -20,7 +20,7 @@ docpack docs --out dist
 packed 12 pages into 85 chunks -> dist
 
 dist/chunks.jsonl    74K   85 records, one per section, for a vector store
-dist/llms.txt       2.2K   a map of the corpus, grouped by Diátaxis type
+dist/llms.txt       2.2K   a map of the corpus, grouped by Diataxis type
 dist/llms-full.txt   45K   every page as one file, for a long context window
 ```
 
@@ -81,7 +81,7 @@ can argue about.
 | **Docs-as-code pipeline** | [`.github/workflows/docs.yml`](.github/workflows/docs.yml) | Ten gates on every pull request: nine checks plus the cold start |
 | **Published figures checked against live runs** | [`tests/test_published_figures.py`](tests/test_published_figures.py) | Every number this README and the retrieval page quote is re-derived from the tools, not duplicated as a constant |
 | **Content model and information architecture** | [`src/docpack/frontmatter.py`](src/docpack/frontmatter.py) | `docpack docs --check` |
-| **Diátaxis structure** | [`docs/`](docs/) | Four directories, one type per page, enforced |
+| **Diataxis structure** | [`docs/`](docs/) | Four directories, one type per page, enforced |
 | **Reference generated from source** | [`docs/reference/api.md`](docs/reference/api.md) | `mkdocstrings`, cannot drift from the code |
 | **Prose linting** | [`.vale.ini`](.vale.ini), [`styles/`](styles/) | Vale, with terminology blocking and style advisory |
 | **Link validation** | [`scripts/check_links.py`](scripts/check_links.py) | Internal links and heading anchors |
@@ -200,7 +200,7 @@ src/docpack/         the library
   evaluate.py          scoring against a golden set
   scaffold.py          the page generator
   cli.py               docpack, docpack new, docpack eval
-docs/                the corpus, organized by Diátaxis
+docs/                the corpus, organized by Diataxis
   tutorials/           learning-oriented
   how-to/              task-oriented
   reference/           information-oriented, generated from docstrings

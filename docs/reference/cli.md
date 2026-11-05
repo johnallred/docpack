@@ -62,7 +62,7 @@ docpack new {tutorial|how-to|reference|explanation} --title TITLE
 
 | Argument | Required | Default | Description |
 |---|---|---|---|
-| `TYPE` | yes | | One of the four Diátaxis types |
+| `TYPE` | yes | | One of the four Diataxis types |
 | `--title` | yes | | Page title. Also sets the filename, slugified |
 | `--docs` | no | `docs` | Root of the documentation tree |
 | `--audience` | no | by type | One of `new-user`, `developer`, `operator`, `contributor` |

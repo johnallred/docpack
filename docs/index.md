@@ -22,7 +22,7 @@ and emits artifacts for three different consumers.
 | Look up a function signature | The [API reference](reference/api.md) |
 | Understand why it works this way | The [explanations](explanation/content-model.md) |
 
-That table is the Diátaxis framework in miniature: learning, task, information,
+That table is the Diataxis framework in miniature: learning, task, information,
 and understanding are four different needs, and mixing them into one page
 serves none of them.
 
@@ -33,7 +33,7 @@ chunk text plus the page's content-model metadata so a retriever can filter
 before it ranks.
 
 **`llms.txt`** for an assistant that needs a map of the site. An annotated
-index grouped by Diátaxis type.
+index grouped by Diataxis type.
 
 **`llms-full.txt`** for an assistant that would rather make one request than
 thirty.

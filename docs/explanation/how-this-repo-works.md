@@ -25,7 +25,7 @@ convention, it is a hope.
 | Layer | What it does | Where |
 |---|---|---|
 | Content model | Typed front matter, closed vocabularies | `src/docpack/frontmatter.py` |
-| Structure | Diátaxis, four directories, one type per page | `docs/` |
+| Structure | Diataxis, four directories, one type per page | `docs/` |
 | Reference | Generated from docstrings, never hand-copied | `mkdocstrings` in `mkdocs.yml` |
 | Prose | Style rules as lint | `.vale.ini`, `styles/` |
 | Links | Every internal link resolves | `scripts/check_links.py` |
@@ -75,7 +75,7 @@ at again, so it describes a page that no longer exists. Deriving all five from a
 required field means the page cannot be published without one, and updating it
 updates everything downstream.
 
-The JSON-LD block also carries the Diátaxis type, which is the part that matters
+The JSON-LD block also carries the Diataxis type, which is the part that matters
 for retrieval rather than ranking. A crawler or an assistant reading the
 structured data learns not just what the page is about but what kind of question
 it can answer: a `reference` page will not explain a design tradeoff, and an

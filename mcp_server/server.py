@@ -10,7 +10,7 @@ server actually needs: `initialize`, `tools/list`, and `tools/call`.
 
 Three tools are exposed:
 
-- `search_docs`    keyword search over chunks, filterable by Diátaxis type
+- `search_docs`    keyword search over chunks, filterable by Diataxis type
 - `get_page`       full Markdown of one page, by path
 - `list_pages`     the corpus index, filterable by type and audience
 

@@ -6,7 +6,7 @@ level: warning
 scope: heading
 match: $sentence
 exceptions:
-  - Diátaxis
+  - Diataxis
   - Python
   - JSONL
   - API

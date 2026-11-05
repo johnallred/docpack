@@ -22,7 +22,7 @@ Five required fields on every page: `title`, `summary`, `diataxis`,
 `audience`, and `updated`. Two of them are closed vocabularies.
 
 `diataxis` must be one of four values, because the
-[Diátaxis framework](https://diataxis.fr) is the organizing idea of the corpus.
+[Diataxis framework](https://diataxis.fr) is the organizing idea of the corpus.
 `audience` must be one of four values, because a page written for an operator
 and a page written for a new user need different assumptions and should not be
 returned interchangeably.
@@ -35,7 +35,7 @@ built on sand.
 
 Closed vocabularies make drift a build failure instead of a slow degradation.
 The cost is that adding a value requires a code change, which is the point:
-adding a fifth Diátaxis type should require a conversation.
+adding a fifth Diataxis type should require a conversation.
 
 The `tags` field is deliberately open, because faceting benefits from
 flexibility and nothing structural depends on it.
