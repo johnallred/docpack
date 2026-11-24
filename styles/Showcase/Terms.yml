@@ -3,7 +3,10 @@ message: "Use '%s' rather than '%s'."
 level: error
 ignorecase: false
 swap:
-  'Diataxis': 'Diataxis'
+  # This repository writes Diataxis without the accent. The rule once swapped
+  # the word for itself, after a bulk spelling change rewrote both sides, and
+  # caught nothing for weeks; tests/test_style_guide.py now fails on that.
+  'Diátaxis': 'Diataxis'
   'front-matter': 'front matter'
   'Github': 'GitHub'
   'Javascript': 'JavaScript'

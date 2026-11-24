@@ -83,7 +83,7 @@ can argue about.
 | **Content model and information architecture** | [`src/docpack/frontmatter.py`](src/docpack/frontmatter.py) | `docpack docs --check` |
 | **Diataxis structure** | [`docs/`](docs/) | Four directories, one type per page, enforced |
 | **Reference generated from source** | [`docs/reference/api.md`](docs/reference/api.md) | `mkdocstrings`, cannot drift from the code |
-| **Prose linting** | [`.vale.ini`](.vale.ini), [`styles/`](styles/) | Vale, with terminology blocking and style advisory |
+| **Prose linting** | [`.vale.ini`](.vale.ini), [`styles/`](styles/), [`STYLE.md`](STYLE.md) | Vale, with terminology blocking and style advisory, and the written guide a test keeps in step with the rules |
 | **Link validation** | [`scripts/check_links.py`](scripts/check_links.py) | Internal links and heading anchors |
 | **Code-sample validation** | [`tests/test_doc_samples.py`](tests/test_doc_samples.py) | Every Python block in the docs is executed |
 | **RAG packaging** | [`src/docpack/pack.py`](src/docpack/pack.py) | Chunks with stable IDs and filterable metadata |
@@ -115,7 +115,7 @@ with them.
 
 ```bash
 docpack docs --check                      # validate the content model
-python3 -m pytest -q                       # 142 tests: units, doctests, doc samples
+python3 -m pytest -q                       # 147 tests: units, doctests, doc samples
 python3 scripts/check_links.py docs/ --check-anchors
 vale docs/                                # prose (install separately: https://vale.sh)
 mkdocs build --strict                     # the site, warnings are errors
@@ -215,13 +215,14 @@ tests/               unit tests, doctests, and the doc-sample runner
 hooks/               build hooks: per-page SEO and structured data
 scripts/             link checker, cold-start harness
 styles/              Vale rules
+STYLE.md             the style guide: the rules, and what no rule can check
 mcp_server/          MCP server exposing the docs to agents
 .github/workflows/   the pipeline
 ```
 
 ## Status
 
-Every command in this README has been run. 142 tests cover the library, its
+Every command in this README has been run. 147 tests cover the library, its
 docstrings, every executable sample in the documentation, and the SEO hook.
 Retrieval scores are published in
 [Evaluating retrieval](docs/explanation/evaluating-retrieval.md) and gated in
