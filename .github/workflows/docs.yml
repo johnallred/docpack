@@ -118,13 +118,12 @@ jobs:
     needs: [quality, coldstart]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    # configure-pages reads the Pages settings for the site URL.
     permissions:
       contents: read
       pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      artifact: ${{ steps.name.outputs.artifact }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -152,14 +151,33 @@ jobs:
 
       - uses: actions/configure-pages@v6
         id: pages
-      # Named per attempt. Every attempt of a run uploads its own copy, and
-      # deploy-pages refuses to choose between two copies with one name, so a
-      # re-run of a failed deploy would otherwise always fail.
+      # The site goes up in one job and is deployed from another. In one job,
+      # deploy-pages can list the run's artifacts a fraction of a second after
+      # the upload finalized and find none (actions/deploy-pages#451), which
+      # failed several deploys here. A separate job starts a new runner, which
+      # gives the listing time to settle. The name carries the attempt and is
+      # passed as an output, so re-running only the failed deploy job reuses
+      # the build attempt's artifact instead of looking for one that does not
+      # exist.
+      - id: name
+        run: echo "artifact=github-pages-${{ github.run_attempt }}" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-pages-artifact@v5
         with:
-          name: github-pages-${{ github.run_attempt }}
+          name: ${{ steps.name.outputs.artifact }}
           path: site
+
+  deploy:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - uses: actions/deploy-pages@v5
         id: deployment
         with:
-          artifact_name: github-pages-${{ github.run_attempt }}
+          artifact_name: ${{ needs.publish.outputs.artifact }}
