@@ -25,6 +25,9 @@ source .venv/bin/activate
 pip install docpack
 ```
 
+On Windows, in PowerShell, the middle line is `.venv\Scripts\Activate.ps1`;
+everything else on this page is the same.
+
 Check that it worked:
 
 ```bash
