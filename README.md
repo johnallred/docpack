@@ -213,7 +213,7 @@ docs/                the corpus, organized by Diataxis
 evals/golden.yaml    20 questions and the pages that should answer them
 tests/               unit tests, doctests, and the doc-sample runner
 hooks/               build hooks: per-page SEO and structured data
-scripts/             link checker, cold-start harness
+scripts/             link checker, cold-start harness, source publisher
 snippets/            text written once and included in several pages
 styles/              Vale rules
 STYLE.md             the style guide: the rules, and what no rule can check

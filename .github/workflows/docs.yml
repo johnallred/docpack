@@ -147,7 +147,7 @@ jobs:
       # Serve the Markdown sources next to the rendered HTML so the links in
       # llms.txt resolve to clean Markdown rather than to a rendered page.
       - name: Publish Markdown sources
-        run: cp -r docs site/docs
+        run: python scripts/publish_sources.py docs site/docs
 
       - uses: actions/configure-pages@v6
         id: pages
