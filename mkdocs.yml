@@ -43,8 +43,16 @@ markdown_extensions:
   - attr_list
   - tables
   - toc: {permalink: true}
-  - pymdownx.highlight: {anchor_linenums: true}
+  # anchor_linenums was on here too, and put an empty, focusable link on every
+  # line of every code sample, which is a tab stop with no name.
+  - pymdownx.highlight
   - pymdownx.superfences
+  # Topic-level reuse: a block written once in snippets/ and included where it
+  # is needed. check_paths makes a missing snippet fail the build rather than
+  # leave a hole in the page. docpack's own packer expands the same lines.
+  - pymdownx.snippets:
+      base_path: [snippets]
+      check_paths: true
   - pymdownx.details
 
 # Diataxis drives the navigation, not just the folder names.

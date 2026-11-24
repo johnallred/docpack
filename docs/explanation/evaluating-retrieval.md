@@ -83,16 +83,23 @@ Twenty cases, top-3, measured against the twelve pages in this repository:
 
 | Metric | Score |
 |---|---|
-| hit@1 | 65% |
+| hit@1 | 70% |
 | hit@3 | 95% |
-| MRR | 0.775 |
-| routing accuracy | 75% |
+| MRR | 0.800 |
+| routing accuracy | 80% |
 | grounded@1 | 90% |
 
 These are not good numbers and they are not meant to look like good numbers.
 Six of the twenty cases are marked hard on purpose, and the set is deliberately
 weighted toward the queries a lexical retriever handles worst. A golden set
 tuned until it went green would measure nothing.
+
+The last move, from 65% to 70% on hit@1, came from a change that was not about
+retrieval. The two closed vocabularies used to be written out by hand on one
+page and only described on another; they are now one snippet included in both
+(see [Add a page](../how-to/add-a-page.md)), and the packer expands includes the
+way the site build does. The explanation of the content model now contains the
+values a question about them uses, and one case started finding it first.
 
 **Twenty cases is a small sample, and the report does not pretend otherwise.**
 One case is five percentage points. Any difference below about ten points is
@@ -112,9 +119,9 @@ The report ends with a second figure: hit@1 when the retriever is told which
 Diataxis type to search.
 
 ```
-  hit@1                     65.0%
+  hit@1                     70.0%
   hit@1 with type filter    75.0%
-  routing headroom         +10.0%
+  routing headroom          +5.0%
 ```
 
 That 75% is **not** an achievable score. At query time nobody knows what type a

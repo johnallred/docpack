@@ -54,9 +54,9 @@ tags: [security]
 ```
 
 All five of `title`, `summary`, `diataxis`, `audience`, and `updated` are
-required. `diataxis` must be one of `tutorial`, `how-to`, `reference`, or
-`explanation`. `audience` must be one of `new-user`, `developer`, `operator`,
-or `contributor`.
+required.
+
+--8<-- "vocabularies.md"
 
 Omitting `--summary` writes a `TODO` placeholder rather than leaving the field
 blank, because a blank one fails validation and a missing one fails it louder.

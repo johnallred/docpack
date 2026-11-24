@@ -12,11 +12,40 @@ See `docs/explanation/ai-readiness.md` for why these are three files and not one
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from .chunk import Chunk, chunk_markdown
-from .frontmatter import PageMeta, parse_page
+from .frontmatter import ContentModelError, PageMeta, parse_page
+
+#: A pymdownx.snippets include line: `--8<-- "name.md"` on a line of its own.
+SNIPPET = re.compile(r'^--8<-- "([^"]+)"[ \t]*$', re.M)
+
+
+def expand_snippets(text: str, snippets_dir: Path, *, source: str = "<page>") -> str:
+    """Replace each include line with the snippet it names.
+
+    The site build expands these through pymdownx.snippets; this does the same
+    for the retrieval artifacts, which otherwise carry the include line instead
+    of the text and lose the fact from every chunk, llms-full.txt and the MCP
+    server. A snippet that does not exist raises, as the site build does,
+    rather than silently leaving a hole.
+
+    >>> import tempfile
+    >>> d = Path(tempfile.mkdtemp())
+    >>> _ = (d / "v.md").write_text("Shared line.\\n")
+    >>> expand_snippets('Before.\\n\\n--8<-- "v.md"\\n', d)
+    'Before.\\n\\nShared line.\\n'
+    """
+
+    def replace(match: re.Match) -> str:
+        path = snippets_dir / match.group(1)
+        if not path.is_file():
+            raise ContentModelError(f"{source}: snippet {match.group(1)!r} does not exist")
+        return path.read_text(encoding="utf-8").rstrip("\n")
+
+    return SNIPPET.sub(replace, text)
 
 
 @dataclass(frozen=True)
@@ -29,11 +58,13 @@ class Page:
     chunks: tuple[Chunk, ...]
 
 
-def load_tree(docs_dir: Path) -> list[Page]:
+def load_tree(docs_dir: Path, snippets_dir: Path | None = None) -> list[Page]:
     """Parse and chunk every markdown page under a directory.
 
     Args:
         docs_dir: Root of the documentation tree.
+        snippets_dir: Where included snippets live. Defaults to `snippets/`
+            beside the docs directory, as `mkdocs.yml` configures.
 
     Returns:
         Pages sorted by path, so output is deterministic and diffs are small.
@@ -42,9 +73,11 @@ def load_tree(docs_dir: Path) -> list[Page]:
         ContentModelError: If any page violates the content model. The whole
             build fails rather than silently skipping the bad page.
     """
+    snippets_dir = snippets_dir or docs_dir.parent / "snippets"
     pages: list[Page] = []
     for path in sorted(docs_dir.rglob("*.md")):
-        text = path.read_text(encoding="utf-8")
+        text = expand_snippets(path.read_text(encoding="utf-8"), snippets_dir,
+                               source=str(path))
         meta, body = parse_page(text, source=str(path))
         rel = path.relative_to(docs_dir).as_posix()
         pages.append(

@@ -27,6 +27,8 @@ Five required fields on every page: `title`, `summary`, `diataxis`,
 and a page written for a new user need different assumptions and should not be
 returned interchangeably.
 
+--8<-- "vocabularies.md"
+
 ## Why closed vocabularies
 
 An open tag field drifts. Within a year you have `howto`, `how-to`, `How To`,

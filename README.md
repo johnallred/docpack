@@ -17,9 +17,9 @@ docpack docs --out dist
 ```
 
 ```
-packed 12 pages into 85 chunks -> dist
+packed 12 pages into 86 chunks -> dist
 
-dist/chunks.jsonl    74K   85 records, one per section, for a vector store
+dist/chunks.jsonl    74K   86 records, one per section, for a vector store
 dist/llms.txt       2.2K   a map of the corpus, grouped by Diataxis type
 dist/llms-full.txt   45K   every page as one file, for a long context window
 ```
@@ -49,7 +49,7 @@ docpack search "how do I make the chunks smaller"
 ```
 
 ```
-  "how do I make the chunks smaller"   (85 chunks indexed)
+  "how do I make the chunks smaller"   (86 chunks indexed)
 
   1. Pack a tree for retrieval > Control chunk size
      how-to/pack-for-rag.md  [how-to]
@@ -115,7 +115,7 @@ with them.
 
 ```bash
 docpack docs --check                      # validate the content model
-python3 -m pytest -q                       # 147 tests: units, doctests, doc samples
+python3 -m pytest -q                       # 153 tests: units, doctests, doc samples
 python3 scripts/check_links.py docs/ --check-anchors
 vale docs/                                # prose (install separately: https://vale.sh)
 mkdocs build --strict                     # the site, warnings are errors
@@ -214,6 +214,7 @@ evals/golden.yaml    20 questions and the pages that should answer them
 tests/               unit tests, doctests, and the doc-sample runner
 hooks/               build hooks: per-page SEO and structured data
 scripts/             link checker, cold-start harness
+snippets/            text written once and included in several pages
 styles/              Vale rules
 STYLE.md             the style guide: the rules, and what no rule can check
 mcp_server/          MCP server exposing the docs to agents
@@ -222,7 +223,7 @@ mcp_server/          MCP server exposing the docs to agents
 
 ## Status
 
-Every command in this README has been run. 147 tests cover the library, its
+Every command in this README has been run. 153 tests cover the library, its
 docstrings, every executable sample in the documentation, and the SEO hook.
 Retrieval scores are published in
 [Evaluating retrieval](docs/explanation/evaluating-retrieval.md) and gated in
