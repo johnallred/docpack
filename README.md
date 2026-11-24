@@ -223,3 +223,13 @@ Retrieval scores are published in
 CI.
 
 MIT licensed.
+
+## Related
+
+- [fieldguide](https://github.com/johnallred/fieldguide)
+  ([site](https://johnallred.github.io/fieldguide/)): the curriculum this
+  repository demonstrates. Its demonstrated page records which concepts
+  docpack shows working, and how far.
+- [coldlab](https://github.com/johnallred/coldlab): a harness that provisions
+  a hands-on AWS lab, runs the lab's own steps, asserts on the result and
+  proves the teardown left nothing behind.
