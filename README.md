@@ -128,6 +128,11 @@ nine checkers, watched them pass, and could not tell what the library was for.
 Eight of the nine print "ok" and produce nothing. `docpack search` did not exist
 until that happened, and the ordering above is the fix.
 
+**Publishing your own copy.** `mkdocs.yml` names this site (`site_name`,
+`site_url`, `repo_url`); change those three and the workflow publishes your copy
+to your own GitHub Pages. The links under *Related* point at the original
+companion repositories on purpose.
+
 ## The ideas worth arguing about
 
 Four decisions in here are opinions, not conventions, and the explanation pages
