@@ -152,8 +152,14 @@ jobs:
 
       - uses: actions/configure-pages@v6
         id: pages
+      # Named per attempt. Every attempt of a run uploads its own copy, and
+      # deploy-pages refuses to choose between two copies with one name, so a
+      # re-run of a failed deploy would otherwise always fail.
       - uses: actions/upload-pages-artifact@v5
         with:
+          name: github-pages-${{ github.run_attempt }}
           path: site
       - uses: actions/deploy-pages@v5
         id: deployment
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
